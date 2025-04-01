@@ -4,9 +4,10 @@ from rasterio.windows import Window
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+import random
 
 class MultiFileRoofDataset(Dataset):
-    def __init__(self, img_dir, mask_dir, patch_size=512, stride=256, augment=False):
+    def __init__(self, img_dir, mask_dir, patch_size=512, stride=256, augment=False, subset_size=None):
         """
         Improved dataset class that properly handles:
         - Correct path joining
@@ -36,6 +37,7 @@ class MultiFileRoofDataset(Dataset):
         self.patch_size = patch_size
         self.stride = stride
         self.augment = augment
+        self.subset_size = subset_size
         self.windows = []
         
         # Precompute windows for all files
@@ -57,7 +59,10 @@ class MultiFileRoofDataset(Dataset):
             except Exception as e:
                 print(f"Error processing {img_file}: {str(e)}")
                 continue
-    
+                
+            # Randomly sample a subset of windows if subset_size is set
+        if self.subset_size:
+            self.windows = random.sample(self.windows, self.subset_size)
     def __len__(self):
         return len(self.windows)
     
